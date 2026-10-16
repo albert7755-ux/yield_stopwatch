@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>殖利率碼表</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --ground:#09140F; --surface:#0F1F19; --surface2:#14291F;
+    --ink:#E6EFE8; --dim:#7E928A; --faint:#2E4038;
+    --mint:#3FE0B0; --amber:#F2B544; --bad:#E2615A;
+    --line:rgba(230,239,232,.13);
+    --serif:"Noto Serif TC",Georgia,"Songti TC",serif;
+    --sans:"Noto Sans TC",-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+    --mono:"IBM Plex Mono",Menlo,monospace;
+    color-scheme:dark;
+  }
+  html,body{height:100%;margin:0;}
+  body{
+    background:var(--ground);color:var(--ink);
+    font-family:var(--sans);font-size:15px;line-height:1.6;
+    -webkit-tap-highlight-color:transparent;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  button{font:inherit;}
+  img{max-width:100%;}
+  [hidden]{display:none!important;}
+
+  #app{min-height:100%;display:flex;flex-direction:column;padding:0 16px;}
+  .wrap{width:100%;max-width:540px;margin:0 auto;flex:1;display:flex;flex-direction:column;
+    padding-block:16px calc(18px + env(safe-area-inset-bottom,0px));}
+  .screen{display:flex;flex-direction:column;flex:1;}
+
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--mint);margin:0 0 9px;}
+  .big{font-family:var(--serif);font-weight:900;font-size:clamp(27px,7.6vw,40px);
+    line-height:1.14;margin:0 0 11px;letter-spacing:.03em;text-wrap:balance;}
+  .lead{color:#C3CFC8;margin:0 0 14px;font-size:14px;}
+  .lead b{color:var(--ink);}
+  .go{font-family:var(--serif);font-weight:700;font-size:17px;letter-spacing:.16em;
+    color:#06120D;background:var(--mint);border:none;border-radius:4px;
+    padding:13px 38px;cursor:pointer;transition:background .15s,transform .15s;}
+  .go:hover{background:#63EEC4;transform:translateY(-2px);}
+  .go:focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
+  .ghost{margin-left:9px;background:none;border:1px solid var(--line);color:var(--ink);
+    border-radius:4px;padding:13px 18px;cursor:pointer;font-size:13px;letter-spacing:.1em;}
+  .ghost:hover{border-color:var(--mint);color:var(--mint);}
+  .fine{font-size:11px;line-height:1.6;color:#5E6F68;margin:14px 0 0;}
+
+  .how{display:flex;flex-direction:column;gap:9px;margin:0 0 15px;}
+  .how .r{display:flex;gap:11px;align-items:flex-start;font-size:13.5px;color:#C3CFC8;}
+  .how .n{flex:0 0 21px;height:21px;border-radius:50%;background:var(--surface2);
+    border:1px solid var(--faint);color:var(--mint);font-family:var(--mono);font-size:11px;
+    font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .how b{color:var(--ink);}
+
+  .steps{display:flex;gap:5px;margin:0 0 14px;}
+  .steps i{flex:1;height:3px;border-radius:2px;background:var(--faint);}
+  .steps i.done{background:var(--mint);}
+  .steps i.now{background:var(--amber);}
+
+  .bondcard{background:var(--surface);border:1px solid var(--line);
+    border-left:3px solid var(--mint);border-radius:4px;padding:13px 15px;margin:0 0 14px;}
+  .bondcard .iss{font-family:var(--serif);font-weight:700;font-size:17px;line-height:1.3;}
+  .bondcard .sub{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.03em;
+    margin-top:3px;line-height:1.5;}
+  .specs{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-top:11px;}
+  .spec{background:var(--surface2);padding:8px 5px;text-align:center;}
+  .spec .v{font-family:var(--mono);font-weight:600;font-size:15px;color:var(--ink);
+    font-variant-numeric:tabular-nums;}
+  .spec .l{font-size:10px;color:var(--dim);margin-top:1px;}
+
+  .qtext{font-family:var(--serif);font-weight:700;font-size:18px;margin:0 0 11px;}
+  .opts{display:flex;flex-direction:column;gap:7px;}
+  .opt{width:100%;display:flex;align-items:center;gap:11px;cursor:pointer;
+    background:rgba(230,239,232,.05);border:1px solid var(--line);
+    border-left:3px solid var(--faint);border-radius:4px;padding:12px 14px;color:var(--ink);
+    transition:background .14s,border-color .14s,transform .14s;}
+  .opt:hover{background:rgba(63,224,176,.1);border-left-color:var(--mint);transform:translateX(3px);}
+  .opt:focus-visible{outline:2px solid var(--mint);outline-offset:2px;}
+  .opt .k{font-family:var(--mono);font-size:11px;color:var(--mint);letter-spacing:.1em;flex:0 0 auto;}
+  .opt .val{font-family:var(--mono);font-weight:700;font-size:18px;font-variant-numeric:tabular-nums;}
+
+  .targetbox{text-align:center;margin:0 0 2px;}
+  .targetbox .lab{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--dim);}
+  .targetbox .num{font-family:var(--mono);font-weight:700;font-size:clamp(28px,8vw,38px);
+    color:var(--amber);line-height:1.1;font-variant-numeric:tabular-nums;}
+  .targetbox .num.wrong{color:var(--bad);}
+  .targetbox .warn{font-size:11px;color:var(--bad);margin-top:2px;}
+
+  .clockwrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:12px;min-height:170px;}
+  .clock{font-family:var(--mono);font-weight:700;font-size:clamp(56px,19vw,96px);line-height:1;
+    color:var(--mint);font-variant-numeric:tabular-nums;text-shadow:0 0 26px rgba(63,224,176,.3);}
+  .clock.hidden{color:#2E6B58;text-shadow:none;}
+  .clock.stopped{color:var(--ink);text-shadow:none;}
+  .ticks{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;max-width:90%;}
+  .ticks i{width:9px;height:9px;border-radius:50%;background:var(--faint);transition:background .08s;}
+  .ticks i.lit{background:var(--amber);}
+  .hintline{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--dim);text-align:center;}
+
+  .stopbtn{width:100%;padding:22px;border-radius:5px;cursor:pointer;
+    background:var(--mint);color:#06120D;border:none;
+    font-family:var(--serif);font-weight:900;font-size:25px;letter-spacing:.3em;
+    transition:background .1s,transform .07s;}
+  .stopbtn:active{background:#63EEC4;transform:scale(.985);}
+  .stopbtn:focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
+  .stopbtn[disabled]{background:var(--faint);color:var(--dim);cursor:default;}
+
+  .fb{text-align:center;padding:8px 0 0;}
+  .fb .mark{font-size:36px;line-height:1;}
+  .fb .err{font-family:var(--mono);font-weight:700;font-size:26px;color:var(--ink);
+    font-variant-numeric:tabular-nums;margin-top:3px;}
+  .fb .errlab{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--dim);}
+  .fb .expl{font-size:13px;color:#C3CFC8;margin-top:9px;line-height:1.65;text-align:left;}
+  .fb .expl b{color:var(--amber);}
+
+  .total{text-align:center;margin:0 0 3px;}
+  .total .num{font-family:var(--mono);font-weight:700;font-size:clamp(40px,12vw,58px);
+    line-height:1;color:var(--mint);font-variant-numeric:tabular-nums;}
+  .total .unit{font-family:var(--mono);font-size:12px;letter-spacing:.18em;color:var(--dim);}
+  .grade{font-family:var(--serif);font-weight:900;font-size:21px;text-align:center;margin:5px 0 14px;}
+
+  table.rows{width:100%;border-collapse:collapse;font-size:12px;margin:0 0 14px;}
+  table.rows th{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--dim);
+    font-weight:500;text-align:right;padding:0 4px 5px;border-bottom:1px solid var(--line);}
+  table.rows th:first-child{text-align:left;}
+  table.rows td{padding:6px 4px;border-bottom:1px solid rgba(230,239,232,.07);text-align:right;
+    font-family:var(--mono);font-variant-numeric:tabular-nums;}
+  table.rows td:first-child{text-align:left;font-family:var(--sans);font-size:12px;}
+  td.ok{color:var(--mint);} td.no{color:var(--bad);}
+  .scroller{overflow-x:auto;}
+
+  .takeaway{border-left:2px solid var(--amber);padding:2px 0 2px 13px;margin:0 0 14px;
+    font-size:13.5px;line-height:1.7;color:#C3CFC8;}
+  .takeaway b{color:var(--ink);}
+  .sharebox{background:var(--surface);border:1px solid var(--line);border-radius:4px;
+    padding:11px 13px;margin:0 0 14px;}
+  .sharebox .lab{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--dim);margin-bottom:6px;}
+  .sharebox pre{font-family:var(--mono);font-size:12px;line-height:1.7;margin:0 0 9px;
+    white-space:pre-wrap;word-break:break-word;color:var(--ink);}
+  .copybtn{background:var(--surface2);border:1px solid var(--faint);color:var(--mint);
+    border-radius:3px;padding:6px 15px;cursor:pointer;font-family:var(--mono);font-size:12px;letter-spacing:.1em;}
+  .copybtn:hover{border-color:var(--mint);}
+  .best{font-family:var(--mono);font-size:12px;color:var(--dim);text-align:center;margin:0 0 12px;}
+  .best b{color:var(--amber);}
+
+  .mutebtn{position:absolute;right:16px;top:14px;
+    background:rgba(9,20,15,.8);border:1px solid var(--line);color:var(--dim);
+    border-radius:3px;padding:3px 8px;font-family:var(--mono);font-size:10px;
+    letter-spacing:.1em;cursor:pointer;z-index:5;}
+  .mutebtn:hover{color:var(--mint);border-color:var(--mint);}
+
+  .nodata{background:var(--surface);border:1px solid var(--bad);border-radius:4px;
+    padding:14px 16px;color:#F0C4C0;font-size:14px;}
+
+  @media (prefers-reduced-motion: reduce){
+    .go,.opt,.stopbtn,.ticks i{transition:none;}
+    .go:hover,.opt:hover{transform:none;}
+    .clock{text-shadow:none;}
+  }
+</style>
+</head>
+<body>
+<div id="app"><div class="wrap" style="position:relative">
+
+  <button class="mutebtn" id="mute" type="button">♪ 開</button>
+
+  <section class="screen" id="s-title">
+    <p class="eyebrow" id="t-eyebrow">比總誤差</p>
+    <h1 class="big">殖利率碼表</h1>
+    <p class="lead">每一輪給你一檔架上的債券，先答出它的<b>殖利率</b>，那個數字就是你的目標秒數。碼表開始跑，你要把它停在那個數字上。</p>
+    <div class="how">
+      <div class="r"><span class="n">1</span><span><b>答對，才知道該停在哪。</b>答錯的話，碼表上顯示的目標也是錯的——你會很穩地停在錯的地方。</span></div>
+      <div class="r"><span class="n">2</span><span><b>跑過 3 秒之後，小數位會被遮起來。</b>剩下靠節拍器數，每秒一拍。</span></div>
+      <div class="r"><span class="n">3</span><span><b>誤差是跟「正確的殖利率」比</b>，不是跟你答的那個。</span></div>
+    </div>
+    <p class="lead" style="font-size:13px;color:#9AAAA3">手機點畫面，電腦按空白鍵。戴耳機比較好數拍。</p>
+    <div id="t-action"><button class="go" id="btn-start" type="button">開始</button></div>
+    <p class="fine" id="bestline"></p>
+  </section>
+
+  <section class="screen" id="s-quiz" hidden>
+    <div class="steps" id="steps-q"></div>
+    <p class="eyebrow" id="qround">第 1 檔</p>
+    <div class="bondcard">
+      <div class="iss" id="q-iss">—</div>
+      <div class="sub" id="q-sub">—</div>
+      <div class="specs">
+        <div class="spec"><div class="v" id="q-cpn">—</div><div class="l">票面利率</div></div>
+        <div class="spec"><div class="v" id="q-yrs">—</div><div class="l">剩餘年期</div></div>
+        <div class="spec"><div class="v" id="q-px">—</div><div class="l">參考價格</div></div>
+      </div>
+    </div>
+    <p class="qtext">這檔的殖利率是多少？</p>
+    <div class="opts" id="q-opts"></div>
+  </section>
+
+  <section class="screen" id="s-run" hidden>
+    <div class="steps" id="steps-r"></div>
+    <div class="targetbox">
+      <div class="lab">目標秒數</div>
+      <div class="num" id="r-target">0.00</div>
+      <div class="warn" id="r-warn" hidden>你答錯了，這不是它真正的殖利率</div>
+    </div>
+    <div class="clockwrap">
+      <div class="clock" id="r-clock">0.00</div>
+      <div class="ticks" id="r-ticks"></div>
+      <div class="hintline" id="r-hint">準備…</div>
+    </div>
+    <button class="stopbtn" id="btn-stop" type="button" disabled>停</button>
+  </section>
+
+  <section class="screen" id="s-fb" hidden>
+    <div class="steps" id="steps-f"></div>
+    <div class="fb">
+      <div class="mark" id="f-mark">🎯</div>
+      <div class="err" id="f-err">0.00</div>
+      <div class="errlab">本輪誤差（秒）</div>
+      <p class="expl" id="f-expl"></p>
+    </div>
+  </section>
+
+  <section class="screen" id="s-end" hidden>
+    <p class="eyebrow" id="e-eyebrow">打完了</p>
+    <div class="total"><div class="num" id="e-total">0.00</div><div class="unit">總誤差（秒）</div></div>
+    <div class="grade" id="e-grade">—</div>
+    <p class="best" id="e-best"></p>
+    <div class="scroller">
+      <table class="rows">
+        <thead><tr><th>債券</th><th>你答</th><th>正解</th><th>你停</th><th>誤差</th></tr></thead>
+        <tbody id="e-rows"></tbody>
+      </table>
+    </div>
+    <p class="takeaway" id="e-lesson"></p>
+    <div class="sharebox">
+      <div class="lab">貼群用</div>
+      <pre id="e-share">—</pre>
+      <button class="copybtn" id="btn-copy" type="button">複製成績</button>
+    </div>
+    <div>
+      <button class="go" id="btn-again" type="button">再打一輪</button>
+      <button class="ghost" id="btn-rules" type="button">看玩法</button>
+    </div>
+    <p class="fine" id="e-fine"></p>
+  </section>
+
+</div></div>
+
+<script>
+/* 題目由後端注入；沒注入時用一組示意題，方便單獨開啟這個檔案測試外觀。 */
+window.__QUESTIONS__ = window.__QUESTIONS__ || [
+  {iss:"示意券 A（請由後端注入題目）", sub:"DEMO · 2030/06/15 · A+", cpn:4.75, yrs:4.2, px:101.35,
+   ans:4.38, opts:[4.75,4.38,3.96],
+   why:"價格 101.35 是<b>溢價</b>，買得比面額貴，所以殖利率低於票面。"},
+  {iss:"示意券 B（請由後端注入題目）", sub:"DEMO · 2032/03/01 · BBB", cpn:4.25, yrs:6.0, px:95.50,
+   ans:5.12, opts:[4.25,5.12,5.68],
+   why:"價格 95.50 是<b>折價</b>，到期還你 100，那段價差也算報酬，所以殖利率高於票面。"},
+  {iss:"示意券 C（請由後端注入題目）", sub:"DEMO · 2036/09/30 · BB+", cpn:5.50, yrs:10.1, px:90.00,
+   ans:6.84, opts:[5.50,6.84,7.22],
+   why:"<b>折價 10 元</b>、剩 10 年，等於每年多賺 1 元左右，把殖利率往上拉。"}
+];
+window.__FOOTNOTE__ = window.__FOOTNOTE__ ||
+  "本遊戲僅供內部教育訓練使用。題目中的報價與殖利率為特定時點的參考資料，可能已經變動，實際條件與價格以總行報價為準，不構成投資建議或要約。債券投資須留意利率風險、信用風險與流動性風險。請勿外流。";
+window.__ASOF__ = window.__ASOF__ || "";
+
+(function(){
+  "use strict";
+
+  var QS = Array.isArray(window.__QUESTIONS__) ? window.__QUESTIONS__ : [];
+  var ROUNDS = QS.length;
+  var SHOW_UNTIL = 3.0, AUTO_STOP = 14.0, BEST_KEY = "yieldStopwatch.best";
+  var REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var AC=null, muted=false;
+  function ac(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ AC=null; } } return AC; }
+  function beep(f,d,v,ty){
+    if(muted) return;
+    var a=ac(); if(!a) return;
+    try{
+      if(a.state==="suspended") a.resume();
+      var o=a.createOscillator(), g=a.createGain();
+      o.type=ty||"sine"; o.frequency.value=f;
+      g.gain.setValueAtTime(v,a.currentTime);
+      g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+d);
+      o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime+d);
+    }catch(e){}
+  }
+  function sTick(){ beep(880,.04,.07,"square"); }
+  function sGo(){ beep(520,.08,.12,"triangle"); setTimeout(function(){beep(780,.1,.1,"triangle");},90); }
+  function sStop(){ beep(300,.09,.13,"square"); }
+  function sGreat(){ beep(988,.09,.14,"triangle"); setTimeout(function(){beep(1319,.12,.11,"triangle");},70); }
+  function sMeh(){ beep(220,.14,.11,"sawtooth"); }
+
+  var S = { screen:"title", round:0, rows:[], t0:0, running:false, lastTick:-1,
+            target:0, correct:0, wasRight:false, picked:0 };
+
+  function $(id){ return document.getElementById(id); }
+  function f2(n){ return (Math.round(n*100)/100).toFixed(2); }
+  function show(name){
+    var ids=["title","quiz","run","fb","end"];
+    for(var i=0;i<ids.length;i++){
+      var el=$("s-"+ids[i]);
+      if(ids[i]===name) el.removeAttribute("hidden"); else el.setAttribute("hidden","");
+    }
+    S.screen=name;
+  }
+  function loadBest(){ try{ var v=localStorage.getItem(BEST_KEY); return v?JSON.parse(v):null; }catch(e){ return null; } }
+  function saveBest(o){ try{ localStorage.setItem(BEST_KEY,JSON.stringify(o)); }catch(e){} }
+
+  function paintSteps(){
+    var ids=["steps-q","steps-r","steps-f"], h="";
+    for(var i=0;i<ROUNDS;i++) h += '<i class="'+(i<S.round?"done":(i===S.round?"now":""))+'"></i>';
+    for(var k=0;k<ids.length;k++){ var box=$(ids[k]); if(box) box.innerHTML=h; }
+  }
+
+  function title(){
+    S.round=0; S.rows=[];
+    $("t-eyebrow").textContent = ROUNDS + " 檔連打 · 比總誤差" + (window.__ASOF__ ? "　·　報價 " + window.__ASOF__ : "");
+    $("e-fine").textContent = window.__FOOTNOTE__;
+    var b=loadBest();
+    $("bestline").innerHTML = (b && b.rounds===ROUNDS)
+      ? "你的最佳紀錄：總誤差 <b style='color:var(--amber)'>"+f2(b.total)+"</b> 秒，答對 "+b.right+"/"+ROUNDS+"。"
+      : "";
+    show("title");
+  }
+
+  function quiz(){
+    var b=QS[S.round];
+    paintSteps();
+    $("qround").textContent = "第 "+(S.round+1)+" 檔 / "+ROUNDS;
+    $("q-iss").textContent = b.iss;
+    $("q-sub").textContent = b.sub;
+    $("q-cpn").textContent = Number(b.cpn).toFixed(2)+"%";
+    $("q-yrs").textContent = Number(b.yrs).toFixed(1)+" 年";
+    $("q-px").textContent = Number(b.px).toFixed(2);
+    var marks=["A","B","C","D"], h="";
+    for(var i=0;i<b.opts.length;i++){
+      h += '<button class="opt" type="button" data-v="'+b.opts[i]+'">'+
+             '<span class="k">'+marks[i]+'</span>'+
+             '<span class="val">'+Number(b.opts[i]).toFixed(2)+'%</span></button>';
+    }
+    $("q-opts").innerHTML=h;
+    var btns=$("q-opts").querySelectorAll(".opt");
+    for(var k=0;k<btns.length;k++){
+      btns[k].addEventListener("click", function(){ answer(parseFloat(this.getAttribute("data-v"))); });
+    }
+    show("quiz");
+  }
+
+  function answer(v){
+    var b=QS[S.round];
+    S.correct=Number(b.ans); S.target=v; S.picked=v;
+    S.wasRight = Math.abs(v-S.correct) < 0.005;
+    runPrep();
+  }
+
+  function runPrep(){
+    paintSteps();
+    $("r-target").textContent = f2(S.target);
+    $("r-target").className = "num" + (S.wasRight ? "" : " wrong");
+    $("r-warn").hidden = S.wasRight;
+    $("r-clock").textContent = "0.00"; $("r-clock").className = "clock";
+    $("r-hint").textContent = "準備…";
+    $("btn-stop").disabled = true;
+    var n=Math.min(14, Math.ceil(S.correct)+2), tk="";
+    for(var i=0;i<n;i++) tk += '<i></i>';
+    $("r-ticks").innerHTML = tk;
+    S.running=false; S.lastTick=-1;
+    show("run");
+    setTimeout(startRun, 1500);
+  }
+
+  function startRun(){
+    if(S.screen!=="run") return;
+    S.t0=performance.now(); S.running=true; S.lastTick=-1;
+    $("btn-stop").disabled=false;
+    $("r-hint").textContent = "停在 "+f2(S.target);
+    sGo();
+    requestAnimationFrame(tickFrame);
+  }
+
+  function tickFrame(now){
+    if(!S.running) return;
+    var t=(now-S.t0)/1000, clock=$("r-clock");
+    if(t<SHOW_UNTIL){ clock.textContent=f2(t); clock.className="clock"; }
+    else { clock.textContent=Math.floor(t)+".──"; clock.className="clock hidden"; }
+    var sec=Math.floor(t);
+    if(sec>S.lastTick){
+      S.lastTick=sec;
+      if(sec>0) sTick();
+      var dots=$("r-ticks").children;
+      for(var i=0;i<dots.length;i++) dots[i].className = (i<sec)?"lit":"";
+    }
+    if(t>=AUTO_STOP){ stopRun(AUTO_STOP); return; }
+    requestAnimationFrame(tickFrame);
+  }
+
+  function stopRun(forced){
+    if(!S.running) return;
+    S.running=false;
+    var t = (typeof forced==="number") ? forced : (performance.now()-S.t0)/1000;
+    $("btn-stop").disabled=true;
+    var clock=$("r-clock");
+    clock.textContent=f2(t); clock.className="clock stopped";
+    sStop();
+    var err=Math.abs(t-S.correct);
+    S.rows.push({ b:QS[S.round], picked:S.picked, right:S.wasRight, stop:t, err:err });
+    setTimeout(function(){ feedback(err,t); }, 650);
+  }
+
+  function mark(err){
+    if(err<0.10) return "🎯";
+    if(err<0.25) return "👍";
+    if(err<0.60) return "😐";
+    return "😵";
+  }
+
+  function feedback(err,t){
+    paintSteps();
+    var b=QS[S.round], row=S.rows[S.rows.length-1];
+    $("f-mark").textContent=mark(err);
+    $("f-err").textContent=f2(err);
+    $("f-expl").innerHTML = row.right
+      ? "答對了。正確殖利率 <b>"+f2(b.ans)+"%</b>，你停在 "+f2(t)+" 秒。<br>"+b.why
+      : "你答 "+f2(row.picked)+"%，正解是 <b>"+f2(b.ans)+"%</b>——所以你一開始就瞄錯了。<br>"+b.why;
+    if(err<0.10) sGreat(); else if(err>=0.60) sMeh();
+    show("fb");
+    setTimeout(function(){
+      S.round++;
+      if(S.round>=ROUNDS) end(); else quiz();
+    }, 2800);
+  }
+
+  function end(){
+    var total=0, right=0, i;
+    for(i=0;i<S.rows.length;i++){ total+=S.rows[i].err; if(S.rows[i].right) right++; }
+    $("e-total").textContent=f2(total);
+
+    var per = total/Math.max(1,ROUNDS), grade;
+    if(per<0.12) grade="神手．又懂又穩";
+    else if(per<0.30) grade="很穩．手感有練過";
+    else if(per<0.60) grade="還行．再抓一下節奏";
+    else grade="節奏再抓一下";
+    if(right < Math.ceil(ROUNDS*0.7)) grade="手感不錯，但條件要再熟一點";
+    if(right===ROUNDS && per<0.12) grade="全對又全準．這榜是你的";
+    $("e-grade").textContent=grade;
+
+    var eggs="";
+    for(i=0;i<S.rows.length;i++) if(Math.abs(S.rows[i].stop-8.88)<0.005) eggs="　🧨 發發發！你停在 8.88";
+    $("e-eyebrow").textContent = ROUNDS+" 檔打完 · 答對 "+right+"/"+ROUNDS+eggs;
+
+    var h="";
+    for(i=0;i<S.rows.length;i++){
+      var r=S.rows[i];
+      h += '<tr><td>'+String(r.b.iss).slice(0,10)+'</td>'+
+           '<td class="'+(r.right?"ok":"no")+'">'+f2(r.picked)+'</td>'+
+           '<td>'+f2(r.b.ans)+'</td><td>'+f2(r.stop)+'</td>'+
+           '<td class="'+(r.err<0.25?"ok":"")+'">'+f2(r.err)+'</td></tr>';
+    }
+    $("e-rows").innerHTML=h;
+
+    var wrongCoupon=0;
+    for(i=0;i<S.rows.length;i++)
+      if(!S.rows[i].right && Math.abs(S.rows[i].picked-S.rows[i].b.cpn)<0.005) wrongCoupon++;
+    var lesson;
+    if(wrongCoupon>=2){
+      lesson = "你有 "+wrongCoupon+" 題把<b>票面利率</b>當成殖利率了——這是最常見的誤會。記這一句就夠：<b>買在折價，殖利率高於票面；買在溢價，殖利率低於票面。</b>票面是發行時就定好的，殖利率是用你買進的價格才算得出來的。";
+    } else if(right===ROUNDS){
+      lesson = "條件全對，表示你看得懂折溢價怎麼影響殖利率。<b>票面是發行時定好的，殖利率是用買進價格算出來的</b>——這句你已經不用背了。接下來拼的就是手感。";
+    } else {
+      lesson = "記這一句就夠：<b>買在折價，殖利率高於票面；買在溢價，殖利率低於票面。</b>票面利率是發行時就定好的，殖利率才是你用現在這個價格買進去實際拿到的。";
+    }
+    $("e-lesson").innerHTML=lesson;
+
+    var b=loadBest(), isBest=false;
+    if(!b || b.rounds!==ROUNDS || total<b.total){
+      isBest=true; b={total:total, right:right, rounds:ROUNDS}; saveBest(b);
+    }
+    $("e-best").innerHTML = isBest ? "🏆 <b>新紀錄</b>"
+      : "最佳紀錄 <b>"+f2(b.total)+"</b> 秒（答對 "+b.right+"/"+ROUNDS+"）";
+
+    var line="";
+    for(i=0;i<S.rows.length;i++) line += (i?" ":"")+mark(S.rows[i].err);
+    $("e-share").textContent =
+      "殖利率碼表\n總誤差 "+f2(total)+" 秒｜條件答對 "+right+"/"+ROUNDS+"\n"+line+"\n來比一下？";
+
+    show("end");
+  }
+
+  function newGame(){ S.round=0; S.rows=[]; quiz(); }
+
+  $("btn-start").addEventListener("click", function(){ ac(); newGame(); });
+  $("btn-again").addEventListener("click", newGame);
+  $("btn-rules").addEventListener("click", title);
+  $("btn-stop").addEventListener("click", function(){ stopRun(); });
+  $("mute").addEventListener("click", function(){
+    muted=!muted; this.textContent = muted ? "♪ 關" : "♪ 開";
+  });
+
+  $("btn-copy").addEventListener("click", function(){
+    var txt=$("e-share").textContent, btn=this;
+    function done(){ btn.textContent="已複製"; setTimeout(function(){ btn.textContent="複製成績"; },1600); }
+    function fallback(){
+      var ta=document.createElement("textarea");
+      ta.value=txt; ta.style.position="fixed"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand("copy"); done(); }
+      catch(e){ btn.textContent="請手動複製上面文字"; }
+      document.body.removeChild(ta);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(done, fallback);
+    } else fallback();
+  });
+
+  document.addEventListener("pointerdown", function(e){
+    if(S.screen==="run" && S.running){
+      if(e.target.closest && e.target.closest("#mute")) return;
+      stopRun();
+    }
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.repeat) return;
+    if(e.key===" "||e.key==="Enter"){
+      if(S.screen==="run" && S.running){ stopRun(); e.preventDefault(); }
+      else if(S.screen==="title"){ $("btn-start").click(); e.preventDefault(); }
+      else if(S.screen==="end"){ $("btn-again").click(); e.preventDefault(); }
+    }
+  });
+
+  if(!ROUNDS){
+    document.querySelector(".wrap").innerHTML =
+      '<div class="nodata"><b>沒有題目。</b><br>後端沒有注入 <code>window.__QUESTIONS__</code>，' +
+      '或是篩選條件下沒有符合的債券。請放寬殖利率區間或票面價差門檻。</div>';
+    return;
+  }
+  title();
+})();
+</script>
+</body>
+</html>
