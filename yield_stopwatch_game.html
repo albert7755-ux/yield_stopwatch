@@ -157,6 +157,43 @@
   .nodata{background:var(--surface);border:1px solid var(--bad);border-radius:4px;
     padding:14px 16px;color:#F0C4C0;font-size:14px;}
 
+  /* ---- 暱稱 ---- */
+  .namerow{margin:0 0 14px;}
+  .namerow label{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;
+    color:var(--dim);margin-bottom:5px;}
+  .namerow input{width:100%;max-width:280px;background:var(--surface2);color:var(--ink);
+    border:1.5px solid var(--faint);border-radius:4px;padding:10px 12px;
+    font-family:var(--sans);font-size:15px;font-weight:600;}
+  .namerow input:focus{outline:none;border-color:var(--mint);
+    box-shadow:0 0 0 3px rgba(63,224,176,.15);}
+  .namerow input.err{border-color:var(--bad);}
+  .namerow .hint{font-size:11.5px;color:var(--dim);margin-top:5px;}
+  .namerow .hint.bad{color:var(--bad);}
+
+  /* ---- 排行榜 ---- */
+  .board{background:var(--surface);border:1px solid var(--line);border-radius:4px;
+    padding:12px 14px;margin:0 0 14px;}
+  .board .bt{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+  .board .bt h3{font-family:var(--serif);font-weight:700;font-size:15px;margin:0;}
+  .board .bt span{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--dim);}
+  .board table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .board th{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--dim);
+    font-weight:500;text-align:right;padding:0 4px 5px;border-bottom:1px solid var(--line);}
+  .board th:nth-child(2){text-align:left;}
+  .board td{padding:6px 4px;border-bottom:1px solid rgba(230,239,232,.07);text-align:right;
+    font-family:var(--mono);font-variant-numeric:tabular-nums;}
+  .board td:nth-child(2){text-align:left;font-family:var(--sans);
+    max-width:11em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .board tr.me td{color:var(--amber);font-weight:700;}
+  .board .rk{color:var(--dim);width:2.4em;}
+  .board tr.me .rk{color:var(--amber);}
+  .board .status{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:8px;}
+  .board .status.bad{color:var(--bad);}
+  .board .status.good{color:var(--mint);}
+  .board .retry{margin-left:8px;background:none;border:1px solid var(--faint);color:var(--mint);
+    border-radius:3px;padding:3px 10px;cursor:pointer;font-family:var(--mono);font-size:11px;}
+  .board .retry:hover{border-color:var(--mint);}
+
   @media (prefers-reduced-motion: reduce){
     .go,.opt,.stopbtn,.ticks i{transition:none;}
     .go:hover,.opt:hover{transform:none;}
@@ -179,6 +216,12 @@
       <div class="r"><span class="n">3</span><span><b>誤差是跟「正確的殖利率」比</b>，不是跟你答的那個。</span></div>
     </div>
     <p class="lead" style="font-size:13px;color:#9AAAA3">手機點畫面，電腦按空白鍵。戴耳機比較好數拍。</p>
+    <div class="namerow" id="namerow" hidden>
+      <label for="pname">上榜用的暱稱</label>
+      <input id="pname" type="text" maxlength="16" autocomplete="off"
+             placeholder="例如：西湖-小明" enterkeyhint="go">
+      <div class="hint" id="namehint">打完會自動上傳成績，全站一起排。</div>
+    </div>
     <div id="t-action"><button class="go" id="btn-start" type="button">開始</button></div>
     <p class="fine" id="bestline"></p>
   </section>
@@ -235,6 +278,14 @@
         <tbody id="e-rows"></tbody>
       </table>
     </div>
+    <div class="board" id="board" hidden>
+      <div class="bt"><h3>排行榜</h3><span id="b-meta"></span></div>
+      <table>
+        <thead><tr><th class="rk">#</th><th>暱稱</th><th>總誤差</th><th>答對</th></tr></thead>
+        <tbody id="b-rows"></tbody>
+      </table>
+      <div class="status" id="b-status">上傳中…</div>
+    </div>
     <p class="takeaway" id="e-lesson"></p>
     <div class="sharebox">
       <div class="lab">貼群用</div>
@@ -266,6 +317,10 @@ window.__QUESTIONS__ = window.__QUESTIONS__ || [
 window.__FOOTNOTE__ = window.__FOOTNOTE__ ||
   "本遊戲僅供內部教育訓練使用。題目中的報價與殖利率為特定時點的參考資料，可能已經變動，實際條件與價格以總行報價為準，不構成投資建議或要約。債券投資須留意利率風險、信用風險與流動性風險。請勿外流。";
 window.__ASOF__ = window.__ASOF__ || "";
+
+/* 排行榜設定。後端注入 {url, key, table} 才會啟用；沒注入就只是單機遊戲。
+   key 必須是 anon public key，絕對不要放 service_role。 */
+window.__SUPABASE__ = window.__SUPABASE__ || null;
 
 (function(){
   "use strict";
@@ -311,6 +366,108 @@ window.__ASOF__ = window.__ASOF__ || "";
   function loadBest(){ try{ var v=localStorage.getItem(BEST_KEY); return v?JSON.parse(v):null; }catch(e){ return null; } }
   function saveBest(o){ try{ localStorage.setItem(BEST_KEY,JSON.stringify(o)); }catch(e){} }
 
+  /* ===================== 排行榜 ===================== */
+  var SB = window.__SUPABASE__;
+  var SB_ON = !!(SB && SB.url && SB.key);
+  var NAME_KEY = "yieldStopwatch.name";
+  var myName = "";
+  function loadName(){ try{ return localStorage.getItem(NAME_KEY) || ""; }catch(e){ return ""; } }
+  function saveName(v){ try{ localStorage.setItem(NAME_KEY, v); }catch(e){} }
+
+  function sbHeaders(extra){
+    var h = { "apikey": SB.key, "Authorization": "Bearer " + SB.key };
+    if(extra) for(var k in extra) h[k] = extra[k];
+    return h;
+  }
+  function sbUrl(qs){
+    return SB.url.replace(/\/+$/, "") + "/rest/v1/" + (SB.table || "yield_stopwatch_scores") + (qs || "");
+  }
+
+  function submitScore(total, right, rows){
+    var body = {
+      player: myName,
+      total_err: Math.round(total * 100) / 100,
+      rounds: ROUNDS,
+      correct: right,
+      asof: window.__ASOF__ || null,
+      detail: rows.map(function(r){
+        return { err: Math.round(r.err * 100) / 100, right: !!r.right };
+      })
+    };
+    return fetch(sbUrl(), {
+      method: "POST",
+      headers: sbHeaders({ "Content-Type": "application/json", "Prefer": "return=minimal" }),
+      body: JSON.stringify(body)
+    }).then(function(res){
+      if(!res.ok) return res.text().then(function(t){ throw new Error(res.status + " " + t.slice(0,120)); });
+    });
+  }
+
+  function fetchBoard(){
+    var qs = "?select=player,total_err,correct&rounds=eq." + ROUNDS +
+             "&order=total_err.asc,created_at.asc&limit=400";
+    return fetch(sbUrl(qs), { headers: sbHeaders() }).then(function(res){
+      if(!res.ok) return res.text().then(function(t){ throw new Error(res.status + " " + t.slice(0,120)); });
+      return res.json();
+    });
+  }
+
+  function renderBoard(list){
+    // 每個人只留最好的一筆
+    var seen = {}, top = [];
+    for(var i=0;i<list.length;i++){
+      var k = String(list[i].player).trim();
+      if(seen[k]) continue;
+      seen[k] = true;
+      top.push(list[i]);
+    }
+    var myRank = 0;
+    for(var j=0;j<top.length;j++) if(String(top[j].player).trim() === myName){ myRank = j+1; break; }
+
+    var h = "";
+    for(var n=0; n<Math.min(10, top.length); n++){
+      var r = top[n], me = String(r.player).trim() === myName;
+      h += '<tr'+(me?' class="me"':'')+'><td class="rk">'+(n+1)+'</td>'+
+           '<td>'+esc(r.player)+'</td>'+
+           '<td>'+Number(r.total_err).toFixed(2)+'</td>'+
+           '<td>'+r.correct+'/'+ROUNDS+'</td></tr>';
+    }
+    if(myRank > 10){
+      var m = top[myRank-1];
+      h += '<tr class="me"><td class="rk">'+myRank+'</td><td>'+esc(m.player)+'</td>'+
+           '<td>'+Number(m.total_err).toFixed(2)+'</td><td>'+m.correct+'/'+ROUNDS+'</td></tr>';
+    }
+    $("b-rows").innerHTML = h || '<tr><td colspan="4" style="text-align:center;color:var(--dim)">還沒有人上榜，你是第一個</td></tr>';
+    $("b-meta").textContent = ROUNDS + " 檔版　共 " + top.length + " 人";
+    return myRank;
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+                    .replace(/"/g,"&quot;");
+  }
+
+  function doBoard(total, right, rows){
+    if(!SB_ON || !myName){ $("board").setAttribute("hidden",""); return; }
+    $("board").removeAttribute("hidden");
+    var st = $("b-status");
+    st.className = "status"; st.textContent = "上傳成績中…";
+    submitScore(total, right, rows)
+      .then(fetchBoard)
+      .then(function(list){
+        var rank = renderBoard(list);
+        st.className = "status good";
+        st.textContent = rank ? ("已上榜　你目前第 " + rank + " 名") : "已上傳";
+      })
+      .catch(function(e){
+        st.className = "status bad";
+        st.innerHTML = "成績沒傳上去（" + esc(e.message || e) + "）" +
+                       '<button class="retry" id="b-retry" type="button">重試</button>';
+        var rb = $("b-retry");
+        if(rb) rb.addEventListener("click", function(){ doBoard(total, right, rows); });
+      });
+  }
+
   function paintSteps(){
     var ids=["steps-q","steps-r","steps-f"], h="";
     for(var i=0;i<ROUNDS;i++) h += '<i class="'+(i<S.round?"done":(i===S.round?"now":""))+'"></i>';
@@ -321,6 +478,10 @@ window.__ASOF__ = window.__ASOF__ || "";
     S.round=0; S.rows=[];
     $("t-eyebrow").textContent = ROUNDS + " 檔連打 · 比總誤差" + (window.__ASOF__ ? "　·　報價 " + window.__ASOF__ : "");
     $("e-fine").textContent = window.__FOOTNOTE__;
+    if(SB_ON){
+      $("namerow").removeAttribute("hidden");
+      if(!$("pname").value) $("pname").value = myName || loadName();
+    }
     var b=loadBest();
     $("bestline").innerHTML = (b && b.rounds===ROUNDS)
       ? "你的最佳紀錄：總誤差 <b style='color:var(--amber)'>"+f2(b.total)+"</b> 秒，答對 "+b.right+"/"+ROUNDS+"。"
@@ -489,11 +650,36 @@ window.__ASOF__ = window.__ASOF__ || "";
       "殖利率碼表\n總誤差 "+f2(total)+" 秒｜條件答對 "+right+"/"+ROUNDS+"\n"+line+"\n來比一下？";
 
     show("end");
+    doBoard(total, right, S.rows);
   }
 
   function newGame(){ S.round=0; S.rows=[]; quiz(); }
 
-  $("btn-start").addEventListener("click", function(){ ac(); newGame(); });
+  function startClicked(){
+    ac();
+    if(SB_ON){
+      var inp = $("pname"), v = (inp.value || "").trim().replace(/\s+/g, " ");
+      if(!v){
+        inp.classList.add("err");
+        $("namehint").className = "hint bad";
+        $("namehint").textContent = "要上榜就得有個名字，隨便取都可以。";
+        inp.focus();
+        return;
+      }
+      inp.classList.remove("err");
+      $("namehint").className = "hint";
+      $("namehint").textContent = "打完會自動上傳成績，全站一起排。";
+      myName = v.slice(0, 16);
+      inp.value = myName;
+      saveName(myName);
+    }
+    newGame();
+  }
+
+  $("btn-start").addEventListener("click", startClicked);
+  $("pname").addEventListener("keydown", function(e){
+    if(e.key === "Enter"){ e.preventDefault(); startClicked(); }
+  });
   $("btn-again").addEventListener("click", newGame);
   $("btn-rules").addEventListener("click", title);
   $("btn-stop").addEventListener("click", function(){ stopRun(); });
@@ -525,8 +711,10 @@ window.__ASOF__ = window.__ASOF__ || "";
   });
   document.addEventListener("keydown", function(e){
     if(e.repeat) return;
+    var t = e.target, typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA");
     if(e.key===" "||e.key==="Enter"){
       if(S.screen==="run" && S.running){ stopRun(); e.preventDefault(); }
+      else if(typing) return;                    // 正在打暱稱，別搶走按鍵
       else if(S.screen==="title"){ $("btn-start").click(); e.preventDefault(); }
       else if(S.screen==="end"){ $("btn-again").click(); e.preventDefault(); }
     }
